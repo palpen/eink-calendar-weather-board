@@ -1,0 +1,17 @@
+.venv/
+.state/
+.secrets/
+config.json
+__pycache__/
+*.pyc
+.DS_Store
+._*
+*.bundle
+.env
+.env.*
+*.pem
+*.key
+*.egg-info/
+build/
+dist/
+*.log

@@ -1,0 +1,25 @@
+{
+  "timezone": "America/Toronto",
+  "city": "Toronto",
+  "latitude": 43.6532,
+  "longitude": -79.3832,
+  "state_dir": ".state",
+  "publish_interval_seconds": 1800,
+  "calendar_feeds": [
+    {"name": "Personal", "url_file": ".secrets/personal-calendar-url", "owner_email": ""}
+  ],
+  "weather_refresh_seconds": 1800,
+  "weather_cache_max_seconds": 21600,
+  "calendar_cache_max_seconds": 86400,
+  "targets": [
+    {
+      "name": "desk-display",
+      "enabled": true,
+      "host": "192.168.1.100",
+      "user": "pi",
+      "port": 22,
+      "identity_file": ".secrets/pi-display",
+      "known_hosts_file": ".secrets/pi-known-hosts"
+    }
+  ]
+}
