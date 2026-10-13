@@ -37,8 +37,10 @@ def read_payload(stream, timeout=30):
 def validate(payload):
     if not payload or len(payload) > MAX_BYTES:
         raise ValueError('Image size exceeds the receiver limit')
+    if not payload.startswith(b'\x89PNG\r\n\x1a\n'):
+        raise ValueError('Only PNG input is accepted')
     Image.MAX_IMAGE_PIXELS = 600 * 448
-    with Image.open(io.BytesIO(payload)) as source:
+    with Image.open(io.BytesIO(payload), formats=['PNG']) as source:
         if source.format != 'PNG' or source.size != (600, 448) or source.mode != 'P':
             raise ValueError('Only indexed 600 x 448 PNG images are accepted')
         source.load()
