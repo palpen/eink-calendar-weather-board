@@ -27,20 +27,13 @@ class Event:
 
 
 def agenda(events, now, limit=4):
-    """Prefer current/upcoming timed events; all-day events never become NEXT UP."""
+    """Show only current/upcoming timed events; recompute on every refresh."""
     ordered = sorted(events, key=lambda e: (e.start.timestamp(), e.end.timestamp(), e.uid))
     all_day = [e for e in ordered if e.all_day]
     timed = [e for e in ordered if not e.all_day]
     remaining = [e for e in timed if e.end.timestamp() > now.timestamp()]
-    completed = [e for e in timed if e.end.timestamp() <= now.timestamp()]
-    if remaining:
-        visible = remaining[:limit]
-        if len(visible) < limit:
-            visible = completed[-(limit - len(visible)):] + visible
-    else:
-        visible = completed[-limit:]
-    visible.sort(key=lambda e: (e.start.timestamp(), e.end.timestamp(), e.uid))
+    visible = remaining[:limit]
     current = next((e for e in remaining if e.start.timestamp() <= now.timestamp() < e.end.timestamp()), None)
     upcoming = next((e for e in remaining if e.start.timestamp() > now.timestamp()), None)
     highlighted = current or upcoming
-    return all_day, visible, highlighted, max(0, len(timed) - len(visible))
+    return all_day, visible, highlighted, max(0, len(remaining) - len(visible))

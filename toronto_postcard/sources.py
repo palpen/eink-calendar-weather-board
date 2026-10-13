@@ -17,6 +17,7 @@ from .model import Event
 
 UTC = timezone.utc
 MAX_CALENDAR_EVENTS = 4096
+MAX_CALENDAR_COMPONENTS = 16384
 MAX_EVENT_TEXT = 2048
 CALENDAR_PARSE_SECONDS = 30
 
@@ -86,7 +87,9 @@ def _parse_ics(payload, day, zone, owner_email):
     start = datetime.combine(day, time.min, zone)
     end = datetime.combine(day + timedelta(days=1), time.min, zone)
     calendar = Calendar.from_ical(payload)
-    if sum(component.name == "VEVENT" for component in calendar.walk()) > MAX_CALENDAR_EVENTS:
+    # Subscription feeds include years of history; bound that separately from
+    # the events expanded for the single display day.
+    if sum(component.name == "VEVENT" for component in calendar.walk()) > MAX_CALENDAR_COMPONENTS:
         raise ValueError("Calendar contains too many events")
     components = recurring_ical_events.of(calendar).between(start, end)
     if len(components) > MAX_CALENDAR_EVENTS:

@@ -36,11 +36,24 @@ class FeedLimitTests(unittest.TestCase):
         self.assertTrue(ellipsis(events[0].title, 100).endswith('…'))
 
     def test_too_many_calendar_entries_are_rejected_before_expansion(self):
-        payload = calendar([entry(uid=str(i)) for i in range(sources.MAX_CALENDAR_EVENTS + 1)])
-        with patch.object(sources.recurring_ical_events, 'of') as expand:
+        payload = calendar([entry(uid=str(i)) for i in range(11)])
+        with patch.object(sources, 'MAX_CALENDAR_COMPONENTS', 10), \
+             patch.object(sources.recurring_ical_events, 'of') as expand:
             with self.assertRaisesRegex(ValueError, 'too many events'):
                 sources.parse_ics(payload, DAY, ZONE)
         expand.assert_not_called()
+
+    def test_historical_entries_do_not_use_up_the_daily_event_limit(self):
+        history = [entry(uid=str(i)).replace('20261012', '20201012')
+                   for i in range(sources.MAX_CALENDAR_EVENTS + 1)]
+        events = sources.parse_ics(calendar(history + [entry(uid='today')]), DAY, ZONE)
+        self.assertEqual(len(events), 1)
+        self.assertTrue(events[0].uid.startswith('today:'))
+
+    def test_daily_event_limit_still_applies_to_large_history_feeds(self):
+        payload = calendar([entry(uid=str(i)) for i in range(sources.MAX_CALENDAR_EVENTS + 1)])
+        with self.assertRaisesRegex(ValueError, 'recurrence expands'):
+            sources.parse_ics(payload, DAY, ZONE)
 
     def test_dense_recurrence_is_rejected(self):
         rule = 'RRULE:FREQ=SECONDLY;COUNT=' + str(sources.MAX_CALENDAR_EVENTS + 1) + '\r\n'

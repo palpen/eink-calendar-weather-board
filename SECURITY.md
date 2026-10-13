@@ -14,7 +14,7 @@ The receiver reads at most 1 MiB with a 30-second upload deadline and accepts on
 
 The optional calendar setup form binds only to `127.0.0.1`, checks its random session route, Host, and Origin, limits request sizes and read time, and uses SSH to save the credential. It exits after saving. Its destination must be an absolute file path inside `.secrets/` without dot segments. Use a trusted administrator SSH alias for setup and stop the form if abandoning a session.
 
-Calendar parsing has a 30-second deadline on the Unix main thread and accepts at most 4096 input/expanded events per feed and 4096 combined events. Titles and locations are bounded to 2048 characters, and rendering truncates text efficiently. Recurrence expansion occurs inside the calendar library before the expanded count is checked; these limits do not provide a hard memory sandbox for malicious feeds. Configure feeds you trust and keep calendar invitations under your control.
+Calendar parsing has a 30-second deadline on the Unix main thread and accepts at most 16384 input event entries per feed, including history, and 4096 expanded events for the display day per feed and across combined feeds. Titles and locations are bounded to 2048 characters, and rendering truncates text efficiently. Recurrence expansion occurs inside the calendar library before the expanded count is checked; these limits do not provide a hard memory sandbox for malicious feeds. Configure feeds you trust and keep calendar invitations under your control.
 
 ## Dependencies and updates
 

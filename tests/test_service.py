@@ -100,10 +100,35 @@ class AgendaTests(unittest.TestCase):
         self.assertEqual(selected.title, '14')
         self.assertIn(selected, visible)
         self.assertEqual(len(all_day), 1)
-        self.assertEqual(hidden, 9)
+        self.assertEqual(hidden, 2)
 
     def test_finished_day_has_no_next_event(self):
-        self.assertIsNone(agenda([event('early', 7)], datetime(2026, 10, 12, 22, tzinfo=ZONE))[2])
+        all_day, visible, selected, hidden = agenda(
+            [event('holiday', 0, 1440, True), event('early', 7)],
+            datetime(2026, 10, 12, 22, tzinfo=ZONE))
+        self.assertEqual(len(all_day), 1)
+        self.assertEqual(visible, [])
+        self.assertIsNone(selected)
+        self.assertEqual(hidden, 0)
+
+    def test_ended_events_do_not_fill_spare_rows(self):
+        now = datetime(2026, 10, 12, 15, tzinfo=ZONE)
+        events = [event('morning', 7), event('just ended', 14),
+                  event('ongoing', 14, 120), event('upcoming', 17)]
+        _, visible, selected, hidden = agenda(events, now)
+        self.assertEqual([e.title for e in visible], ['ongoing', 'upcoming'])
+        self.assertEqual(selected.title, 'ongoing')
+        self.assertEqual(hidden, 0)
+
+    def test_later_added_event_appears_after_day_was_finished(self):
+        now = datetime(2026, 10, 12, 19, tzinfo=ZONE)
+        events = [event('morning', 7)]
+        self.assertEqual(agenda(events, now)[1], [])
+        events.append(event('added later', 20))
+        _, visible, selected, hidden = agenda(events, now)
+        self.assertEqual([e.title for e in visible], ['added later'])
+        self.assertEqual(selected.title, 'added later')
+        self.assertEqual(hidden, 0)
 
     def test_overlapping_events_are_retained(self):
         events = [event('one', 15), event('two', 15, 30)]

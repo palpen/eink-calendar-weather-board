@@ -214,7 +214,12 @@ def render(now, events, weather, calendar_status='live', weather_status='live', 
     top, available = y + 19, 411 - (y + 19)
     row_height = min(73, available // max(1, len(visible)))
     if not visible:
-        message = 'No timed events today' if calendar_status != 'unavailable' else 'Calendar unavailable'
+        if calendar_status == 'unavailable':
+            message = 'Calendar unavailable'
+        elif any(not event.all_day for event in events):
+            message = 'No more events today'
+        else:
+            message = 'No events scheduled today'
         c.text(313, top + 15, message, 20, 'rounded', width=263)
         if calendar_status != 'unavailable':
             c.text(313, top + 51, 'Enjoy the open space.', 17, width=263)
@@ -240,15 +245,10 @@ def render(now, events, weather, calendar_status='live', weather_status='live', 
         c.text(493, 413, f'+{hidden_count} more', 12, width=83)
     warnings = []
     if calendar_status == 'snapshot': warnings.append('Calendar snapshot')
-    elif calendar_status == 'cached': warnings.append('Calendar cached')
     elif calendar_status == 'unavailable': warnings.append('Calendar offline')
     if weather_status != 'live': warnings.append('Weather ' + weather_status)
     if warnings:
-        footer = ' · '.join(warnings)
-    elif weather:
-        observed = datetime.fromtimestamp(weather['observed_at'], now.tzinfo)
-        footer = 'Updated ' + observed.strftime('%H:%M') + ' · Open-Meteo'
-    else:
-        footer = 'Waiting for fresh data'
-    c.text(313, 429, footer, 12, width=263)
+        c.text(313, 413, ' · '.join(warnings), 11, width=170)
+    footer = 'Last refresh ' + now.strftime('%d %b %Y, %H:%M')
+    c.text(576 - font('sans', 11).getlength(footer), 429, footer, 11)
     return c.image
