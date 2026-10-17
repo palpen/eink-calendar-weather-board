@@ -1,4 +1,4 @@
-# Toronto Postcard
+# E-Ink Calendar Weather Board
 
 A Mac publisher and lightweight Raspberry Pi receiver for the **Pimoroni Inky Impression 5.7-inch, seven-color, 600 × 448** display. The publisher renders the selected Toronto postcard design in landscape, with Toronto's skyline, current weather, today's calendar, and a subtle red marker for the next event. An ongoing event is labeled NOW.
 
@@ -16,6 +16,8 @@ The Mac keeps calendar credentials and fetches data; each Pi receives only an in
 
 ## Project layout
 
+The repository and checkout are named `eink-calendar-weather-board`. The Python module (`toronto_postcard`), launchd label (`local.toronto-postcard.publisher`), and log directory retain their existing identifiers for compatibility with installed publishers and receivers.
+
 `toronto_postcard/` contains sources, rendering, scheduling entry point, and multi-Pi publishing. `receiver/receive.py` is the Pi's forced SSH command and works with its installed Python 3.9 and Inky 1.3.2. `scripts/install_mac.py` installs the launchd agent. `tests/` checks event expansion, selection, daylight saving, native rendering, and image validation. `requirements.lock.txt` records the tested publisher dependencies.
 
 Private deployment files are **excluded from Git**: `config.json`, `.secrets/`, `.state/`, and `.venv/`. The configuration example contains no working credentials. Live event data, rendered images, host-specific settings, and private keys must stay out of commits and bundles.
@@ -25,8 +27,8 @@ Private deployment files are **excluded from Git**: `config.json`, `.secrets/`, 
 Requires Python 3.11 or newer, Git, and a logged-in macOS account. Python can be installed through Homebrew. All fonts are obtained from macOS; no proprietary font files are redistributed. An optional Linux publisher can use `fonts-dejavu-core`, with slightly different typography.
 
 ```sh
-git clone https://github.com/palpen/toronto-postcard.git
-cd toronto-postcard
+git clone https://github.com/palpen/eink-calendar-weather-board.git
+cd eink-calendar-weather-board
 python3 -m venv .venv
 .venv/bin/python -m pip --isolated install --upgrade "pip>=26.2.1"
 .venv/bin/python -m pip --isolated install --require-hashes -r requirements.lock.txt
@@ -40,7 +42,7 @@ Edit `config.json` for this Mac and its Pi targets. Set a feed's `url_file` to a
 To transfer the credential without placing it in shell history, run the one-time setup form from a computer that already has trusted SSH access to the publisher Mac:
 
 ```sh
-python3 scripts/setup_feed.py --host PUBLISHER_SSH_ALIAS --destination /absolute/path/to/toronto-postcard/.secrets/personal-calendar-url
+python3 scripts/setup_feed.py --host PUBLISHER_SSH_ALIAS --destination /absolute/path/to/eink-calendar-weather-board/.secrets/personal-calendar-url
 ```
 
 Open the printed localhost address and paste the private calendar link into the password field. The form sends it over SSH directly to the Mac's private file, logs no credential values, and shuts down after saving. Adapt the SSH alias and destination for your own publisher.
@@ -71,7 +73,7 @@ Inventory each Pi first: this receiver supports only the matching Inky Impressio
 Using a trusted administrator connection, clone the source into `/home/pi/toronto-postcard` (or adapt the paths for a dedicated display user). The Pi does not install the Mac publisher's dependencies.
 
 ```sh
-git clone https://github.com/palpen/toronto-postcard.git /home/pi/toronto-postcard
+git clone https://github.com/palpen/eink-calendar-weather-board.git /home/pi/toronto-postcard
 python3 -c 'from inky.auto import auto; print(auto().resolution)'
 ```
 
@@ -140,7 +142,7 @@ launchctl bootout gui/$(id -u)/local.toronto-postcard.publisher
 
 # Verify behavior and export portable version history
 .venv/bin/python -m unittest discover -s tests -v
-git bundle create toronto-postcard.bundle main
+git bundle create eink-calendar-weather-board.bundle main
 ```
 
 The receiver's `.state/last-display.json` confirms the image hash and refresh completion; `.state/palette-preview.png` is the installed driver's pigment preview. Publisher status isolates failures by target and records SSH/receiver errors, so an offline Pi cannot prevent another Pi from updating. Calendar-fetch logs omit credential-bearing exception messages. Mac background logs are in `~/Library/Logs/toronto-postcard/` so launchd can open them when the project is on the Desktop. Log files are private and can be rotated or removed when the job is stopped.
@@ -149,6 +151,6 @@ For an explicit manual refresh of an unchanged image, an administrator can run `
 
 ## Version control and updates
 
-The public repository is [palpen/toronto-postcard](https://github.com/palpen/toronto-postcard), with releases on `main`. Keep source changes in commits, rerun the behavior tests, and install matching receiver changes through a trusted administrator connection. Update dependencies deliberately and verify the display after changes. GitHub Actions tests synthetic data only and audits the locked publisher dependencies; it has no access to your calendar or devices.
+The public repository is [palpen/eink-calendar-weather-board](https://github.com/palpen/eink-calendar-weather-board), with releases on `main`. Keep source changes in commits, rerun the behavior tests, and install matching receiver changes through a trusted administrator connection. Update dependencies deliberately and verify the display after changes. GitHub Actions tests synthetic data only and audits the locked publisher dependencies; it has no access to your calendar or devices.
 
 Publish only the reviewed `main` branch. Local historical refs may contain private deployment details; do not publish all branches, mirror refs, or export private history. A portable bundle of `main` carries the public commit history without private settings. See [SECURITY.md](SECURITY.md) for data handling, connection restrictions, and reporting a vulnerability.
